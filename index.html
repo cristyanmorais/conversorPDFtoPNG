@@ -14,12 +14,13 @@
 	font-family: 'Roboto', sans-serif;
 }
 
-div {
-	text-align: center;
+html, body {
+  margin: 0;
+  padding: 0;
 }
 
-img {
-	width: 100px;
+div {
+	text-align: center;
 }
 
 h1 {
@@ -28,24 +29,30 @@ h1 {
 
 p {
 	font-size: 1em;
-	margin-bottom: 100px;
 }
 
 input {
 	display: none;
 }
 
-label {
+#label {
 	border: 1px solid #ccc;
 	border-radius: 0.25em;
-    display: inline-block;
-    padding: 20px 12px;
-    cursor: pointer;
-	background-color: #32C91A;
-	box-shadow: inset 0 0 0.1em #fff, 0.2em 0.2em 0.2em rgba( 0, 0, 0, 0.1 );
+  display: inline-block;
+  padding: 20px 20px;
+  cursor: pointer;
+	background: linear-gradient(180deg, #2C9AFF 0%, #2C9AFF 0.01%, #006BCE 100%);
+  box-shadow: 0px 6px 11px 0px rgba(0, 0, 0, 0.25);
 
 	font-weight: 700;
 	font-size: 2em;
+  color: #fff;
+
+  transition: background-color 1s ease;
+}
+
+#label:hover{
+  background: linear-gradient(180deg, #1e6eb8 0%, #175794 0.01%, #00396e 100%);
 }
 
 #footer {
@@ -76,23 +83,21 @@ h6 {
 	display: inline-block;
 }
 
-#botao {
-	margin-bottom: 100px;
-}
 
 #progressBar {
-      width: 50%;
-      height: 30px;
-      background-color: #f2f2f2;
-      border-radius: 4px;
-      overflow: hidden;
+    width: 50%;
+    height: 30px;
+    background-color: #f2f2f2;
+    border-radius: 4px;
+    overflow: hidden;
 	  margin: auto;
-    }
+}
 
 #progressBar .progress {
-    height: 100%;
-    background-color: #32C91A;
-    transition: width 0.2s ease-in-out;
+  height: 100%;
+  background: linear-gradient(180deg, #2C9AFF 0%, #2C9AFF 0.01%, #006BCE 100%);
+  box-shadow: 0px 6px 11px 0px rgba(0, 0, 0, 0.25);
+  transition: width 0.2s ease-in-out;
 }
 
 .progressText {
@@ -102,12 +107,46 @@ h6 {
 	left: 0;
 	right: 0;
 }
+
+.header{
+  background: linear-gradient(180deg, #2C9AFF 0%, #2C9AFF 0.01%, #006BCE 100%);
+  box-shadow: 0px 6px 11px 0px rgba(0, 0, 0, 0.25);
+}
+
+.header .conv {
+  color: #FFF;
+  text-align: center;
+  font-size: 50px;
+  font-family: Roboto;
+  letter-spacing: 22.5px;
+  font-weight: 500;
+  margin-bottom: -10px;
+}
+
+.header .pdf {
+  color: #FFF;
+  text-align: center;
+  font-size: 90px;
+  font-family: Roboto;
+  font-weight: 700;
+  margin-top: 0;
+}
+
+#texto{
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
 </style>
 </head>
 
 <body>
+
 	<div id="all">
-		<h1>PDF para PNG</h1>
+    <div class="header">
+      <h1 class="conv">CONVERSOR</h1>
+      <h1 class="pdf">PDF para PNG</h1>
+    </div>
+		
 		<p id="texto">Converta as páginas de um arquivo PDF para arquivos de imagem PNG,
 	   	<br>basta selecionar um arquivo e a conversão acontecerá em seguida</p>
 
@@ -132,103 +171,106 @@ h6 {
 		</div>
 	</div>
 
-	
-
 	<div id="pdf-main-container">
 	  <a id="download-images" href="#" download="pages.zip" style="display: none;">Download Images as ZIP</a>
 	</div>
 
-	<script>
+<script>
 		const pdfFileInput = document.querySelector("#pdfFileInput");
 		const outroProgress = document.querySelector("#progressBar")
 		const progressBar = document.querySelector("#progressBar .progress");
 		const textoElemento = document.querySelector("#texto");
 
-pdfFileInput.addEventListener("change", function(event) {
-  pdfFileInput.style.display = "none";
-  label.style.display = "none";
-  outroProgress.style.display = "block";
-  textoElemento.textContent = "Arquivo selecionado! Aguarde enquanto fazemos a conversão.";
-});
+  pdfFileInput.addEventListener("change", function(event) {
+    pdfFileInput.style.display = "none";
+    label.style.display = "none";
+    outroProgress.style.display = "block";
+    textoElemento.textContent = "Arquivo selecionado! Aguarde enquanto fazemos a conversão.";
+  });
 
-function converterPDFParaImagens(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+  function converterPDFParaImagens(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-    reader.onload = function() {
-      const typedArray = new Uint8Array(this.result);
+      reader.onload = function() {
+        const typedArray = new Uint8Array(this.result);
 
-      pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
-        const totalPaginas = pdf.numPages;
-        const zip = new JSZip();
+        pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
+          const totalPaginas = pdf.numPages;
+          const zip = new JSZip();
 
-        function converterPagina(pageIndex) {
-          if (pageIndex >= totalPaginas) {
-            zip.generateAsync({ type: "blob" }).then(function(content) {
-              resolve(content);
+          function converterPagina(pageIndex) {
+            if (pageIndex >= totalPaginas) {
+              zip.generateAsync({ type: "blob" }).then(function(content) {
+                resolve(content);
+              });
+              return;
+            }
+
+            pdf.getPage(pageIndex + 1).then(function(page) {
+              const scale = 2;
+              const viewport = page.getViewport({ scale });
+
+              const canvas = document.createElement("canvas");
+              const context = canvas.getContext("2d");
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+
+              const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+              };
+
+              page.render(renderContext).promise.then(function() {
+                const imageData = canvas.toDataURL("image/png");
+                zip.file(`pagina_${pageIndex + 1}.png`, imageData.substr(imageData.indexOf(',') + 1), { base64: true });
+
+                const progressoAtual = pageIndex + 1;
+                const progressoTotal = (progressoAtual / totalPaginas) * 100;
+                progressBar.style.width = progressoTotal + "%";
+                textoElemento.textContent = `Conversão em andamento: ${progressoTotal.toFixed(0)}%`;
+                
+                if(progressoTotal == 100){
+                  textoElemento.textContent = `Conversão completa!`;
+                }
+
+                converterPagina(pageIndex + 1);
+              });
             });
-            return;
           }
 
-          pdf.getPage(pageIndex + 1).then(function(page) {
-            const scale = 2;
-            const viewport = page.getViewport({ scale });
+          converterPagina(0);
+        });
+      };
 
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
+      reader.onerror = function() {
+        reject(new Error('Falha ao ler o arquivo.'));
+      };
 
-            const renderContext = {
-              canvasContext: context,
-              viewport: viewport
-            };
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
-            page.render(renderContext).promise.then(function() {
-              const imageData = canvas.toDataURL("image/png");
-              zip.file(`pagina_${pageIndex + 1}.png`, imageData.substr(imageData.indexOf(',') + 1), { base64: true });
+  const fileInput = document.querySelector("#pdfFileInput");
 
-              const progressoAtual = pageIndex + 1;
-              const progressoTotal = (progressoAtual / totalPaginas) * 100;
-              progressBar.style.width = progressoTotal + "%";
-              console.log("Progresso: " + progressoTotal + "%");
+  fileInput.addEventListener("change", function(event) {
+    const file = event.target.files[0];
 
-              converterPagina(pageIndex + 1);
-            });
-          });
-        }
-
-        converterPagina(0);
-      });
-    };
-
-    reader.onerror = function() {
-      reject(new Error('Falha ao ler o arquivo.'));
-    };
-
-    reader.readAsArrayBuffer(file);
+    converterPDFParaImagens(file).then(function(zipContent) {
+      const pdfFileName = file.name.replace(/\.[^/.]+$/, "");
+      const url = URL.createObjectURL(zipContent);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${pdfFileName}.zip`;
+      a.click();
+      setTimeout(function() {
+        URL.revokeObjectURL(url);
+      }, 100);
+    }).catch(function(error) {
+      console.error(error);
+    });
   });
-}
-
-const fileInput = document.querySelector("#pdfFileInput");
-
-fileInput.addEventListener("change", function(event) {
-  const file = event.target.files[0];
-
-  converterPDFParaImagens(file).then(function(zipContent) {
-    const url = URL.createObjectURL(zipContent);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "imagens.zip";
-    a.click();
-    setTimeout(function() {
-      URL.revokeObjectURL(url);
-    }, 100);
-  }).catch(function(error) {
-    console.error(error);
-  });
-});
-	</script>
+</script>
 
 </body>
 </html>
