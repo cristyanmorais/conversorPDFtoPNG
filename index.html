@@ -43,6 +43,7 @@ input {
   cursor: pointer;
 	background: linear-gradient(180deg, #2C9AFF 0%, #2C9AFF 0.01%, #006BCE 100%);
   box-shadow: 0px 6px 11px 0px rgba(0, 0, 0, 0.25);
+  margin-bottom: 20px;
 
 	font-weight: 700;
 	font-size: 2em;
@@ -55,14 +56,6 @@ input {
   background: linear-gradient(180deg, #1e6eb8 0%, #175794 0.01%, #00396e 100%);
 }
 
-#footer {
-	position: absolute;
-	bottom: 0;	
-	margin-left: auto;
-	margin-right: auto;
-	left: 0;
-	right: 0;
-}
 
 #teste {
 	white-space: nowrap;
@@ -91,6 +84,8 @@ h6 {
     border-radius: 4px;
     overflow: hidden;
 	  margin: auto;
+    margin-top: 100px;
+    margin-bottom: 200px;
 }
 
 #progressBar .progress {
@@ -109,14 +104,15 @@ h6 {
 }
 
 .header{
-  background: linear-gradient(180deg, #2C9AFF 0%, #2C9AFF 0.01%, #006BCE 100%);
+  background: linear-gradient(180deg, #2C9AFF 0%, #2c9aff 0.01%, #006BCE 100%);
   box-shadow: 0px 6px 11px 0px rgba(0, 0, 0, 0.25);
+  width: 100%;
 }
 
 .header .conv {
   color: #FFF;
   text-align: center;
-  font-size: 50px;
+  font-size: 3em;
   font-family: Roboto;
   letter-spacing: 22.5px;
   font-weight: 500;
@@ -126,16 +122,97 @@ h6 {
 .header .pdf {
   color: #FFF;
   text-align: center;
-  font-size: 90px;
+  font-size: 6em;
   font-family: Roboto;
   font-weight: 700;
   margin-top: 0;
 }
 
 #texto{
-  margin-top: 50px;
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 }
+
+.drop-area {
+  width: 50%;
+  border: 2px dashed #2c9aff;
+  text-align: center;
+  font-size: 1em;
+  margin: auto;
+  background-color: #eaf5ff;
+
+  justify-content: center;
+}
+
+.drop-area p {
+  padding: 8%;
+}
+
+.drag-over {
+  background-color: #f0f0f0;
+}
+
+#footer {
+  margin-top: 5%;
+}
+
+.texto-meio {
+  width: 70%;
+  text-align: center;
+  margin: auto;
+}
+
+@media (max-width: 660px) {
+  .drop-area {
+    display: none;
+  }
+
+  .header .conv {
+    font-size: 2em;
+    letter-spacing: 17px;
+  }
+
+  .header .pdf {
+    font-size: 4em;
+  }
+
+  #texto {
+    margin-top: 75px;
+    margin-bottom: 75px;
+  }
+
+  #label {
+    font-size: 1.5em;
+  }
+
+  #logotoo {
+    width: 150px;
+  }
+
+  #footer {
+    margin-top: 20%;
+  }
+}
+
+@media (max-width: 410px) {
+  .header .conv {
+    font-size: 1.5em;
+    letter-spacing: 12px;
+  }
+
+  .header .pdf {
+    font-size: 3em;
+  }
+
+  #label {
+    font-size: 1em;
+  }
+
+  #footer h6 {
+    font-size: 0.9em;
+  }
+  
+}
+
 </style>
 </head>
 
@@ -147,8 +224,10 @@ h6 {
       <h1 class="pdf">PDF para PNG</h1>
     </div>
 		
-		<p id="texto">Converta as páginas de um arquivo PDF para arquivos de imagem PNG,
-	   	<br>basta selecionar um arquivo e a conversão acontecerá em seguida</p>
+		<div class="texto-meio">
+      <p id="texto">Converta as páginas de um arquivo PDF para arquivos de imagem PNG,
+        <br>basta selecionar um arquivo e a conversão acontecerá em seguida</p>
+    </div>
 
 		<div id="botao">
 			<label id="label" for="pdfFileInput">SELECIONE UM ARQUIVO PDF</label>
@@ -159,6 +238,10 @@ h6 {
 			<p class="progressText"></p>
 			<div class="progress" style="width: 0;"></div>
 		</div>
+
+    <div class="drop-area">
+      <p>Ou arraste o arquivo aqui!</p>
+    </div>
 
 		<div id="footer">
 			<div>
@@ -180,14 +263,71 @@ h6 {
 		const outroProgress = document.querySelector("#progressBar")
 		const progressBar = document.querySelector("#progressBar .progress");
 		const textoElemento = document.querySelector("#texto");
+    const dropArea = document.querySelector(".drop-area");
 
   pdfFileInput.addEventListener("change", function(event) {
     pdfFileInput.style.display = "none";
     label.style.display = "none";
     outroProgress.style.display = "block";
     textoElemento.textContent = "Arquivo selecionado! Aguarde enquanto fazemos a conversão.";
+    dropArea.style.display = "none";
   });
 
+  //Arrastar e Soltar Arquivo
+  ['dragenter', 'dragover', 'dragleave'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    document.addEventListener(eventName, highlight, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    document.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight() {
+    dropArea.classList.add('highlight');
+  }
+
+  function unhighlight() {
+    dropArea.classList.remove('highlight');
+  }
+
+  document.addEventListener('drop', handleDrop, false); // Adicione o event listener 'drop' ao documento
+
+  function handleDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const file = event.dataTransfer.files[0];
+    converterPDFParaImagens(file).then(function(zipContent) {
+      const pdfFileName = file.name.replace(/\.[^/.]+$/, "");
+      const url = URL.createObjectURL(zipContent);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${pdfFileName}.zip`;
+      a.click();
+      setTimeout(function() {
+        URL.revokeObjectURL(url);
+      }, 100);
+    }).catch(function(error) {
+      console.error(error);
+    });
+
+    pdfFileInput.style.display = "none";
+    label.style.display = "none";
+    outroProgress.style.display = "block";
+    textoElemento.textContent = "Arquivo selecionado! Aguarde enquanto fazemos a conversão.";
+    dropArea.style.display = "none";
+}
+
+  //------------------------------------------------------------------------------------------------------------
   function converterPDFParaImagens(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
